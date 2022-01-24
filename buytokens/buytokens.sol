@@ -5,19 +5,24 @@ contract buyErc20 is ERC20{
     uint256 public tokenAmountEth;
     address public contractowner;
     event mintSuccess(uint256 tokenvalue, string message, address mintedUser);
+    event tokenTransferred(string message, address toUser);
 
     constructor() ERC20("myToken","DS"){
         tokenAmountEth = 0.0001 * 10 ** 18;
         contractowner = msg.sender;
     }
 
-    function changeTokenPrice(uint256 price) public {
+    modifier onlyOwner() { 
         require(msg.sender == contractowner, "Only owner can change the price of token");
+        _;
+    }
+
+    function changeTokenPrice(uint256 price) public onlyOwner {
         tokenAmountEth = price;
     }
 
-    function buy(uint256 amount) public {
-        uint256 totalTokens = div(amount, tokenAmountEth, "Entered amount should be greater then zero");
+    function buy(address payable _to) public payable {
+        uint256 totalTokens = div(msg.value, tokenAmountEth, "Entered amount should be greater then zero");
         _mint(msg.sender, totalTokens);
         emit mintSuccess(totalTokens, "tokens minted to", msg.sender);
     }
