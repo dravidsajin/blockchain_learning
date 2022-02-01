@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
-contract multisig {
+contract Multisig {
 
     struct transaction {
         address from;
@@ -47,6 +48,8 @@ contract multisig {
         _;
     }
 
+    event eSubmitTransaction(address sender, uint256 transactionid);
+
     constructor (address[] memory _approvers, uint approvercount) {
         require(_approvers.length > 0, "Invalid approvers list");
         require(approvercount == _approvers.length, "approver count should be matched approvers list");
@@ -66,6 +69,7 @@ contract multisig {
         uint randomNumber = rand();
         transactionslist[randomNumber] = transaction(_from, _to, amount * 10 ** 18, 0, false);
         totalTransactioncount++;
+        emit eSubmitTransaction(msg.sender, randomNumber);
         return randomNumber;
     }
 
