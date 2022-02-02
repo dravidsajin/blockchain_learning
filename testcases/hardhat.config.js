@@ -1,6 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
-const fs = require("fs");
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+require("@nomiclabs/hardhat-etherscan");
+const json = require("./secrets.json");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -20,12 +20,15 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   networks: {
-    testnet: {
+    bsc_testnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
       gasPrice: 20000000000,
-      accounts: { mnemonic: mnemonic },
+      accounts: { mnemonic: json.mnemonic },
     },
+  },
+  etherscan: {
+    apiKey: json.apikey,
   },
   solidity: {
     version: "0.8.4",
@@ -35,5 +38,14 @@ module.exports = {
         runs: 1000,
       },
     },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
+  },
+  mocha: {
+    timeout: 600000,
   },
 };
