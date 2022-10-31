@@ -6,13 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Token is ERC20, Ownable {
     uint256 public MINT_AMOUNT = 10 ** decimals();
-    address[] public WHITELISTED_USERS;
+    mapping(address => bool) public WHITELISTED_USERS;
 
     constructor() ERC20("Milkey", "ML") {}
-    
-    function getTotalUsers() public view returns (uint) {
-        return WHITELISTED_USERS.length;
-    }
 
     function mintToken(address _to) external onlyOwner {
         _mint(_to, MINT_AMOUNT);
@@ -23,32 +19,25 @@ contract Token is ERC20, Ownable {
     }
 
     function addUsers(address _useraddress) external onlyOwner {
-        require(WHITELISTED_USERS.length <= 10, 'Cannot add more than 10 users');
-        WHITELISTED_USERS.push(_useraddress);
+        WHITELISTED_USERS[_useraddress] = true;
     }
 
     function removeUsers(address _useraddress) external onlyOwner {
-        require(WHITELISTED_USERS.length > 0, 'No users found');
-
-        for (uint256 i = 0; i < WHITELISTED_USERS.length; i++) {
-            if (_useraddress == WHITELISTED_USERS[i]) {
-                address lastPositionAddress = WHITELISTED_USERS[WHITELISTED_USERS.length - 1];
-                WHITELISTED_USERS[i] = lastPositionAddress;
-                WHITELISTED_USERS.pop();
-                break;
-            }
-        }
+        WHITELISTED_USERS[_useraddress] = false;
     }
 
-    function transferTokens(address _fromAddress, address _toAddress, uint256 amount) external {
-        bool isExist = false;
-         for (uint256 i = 0; i < WHITELISTED_USERS.length; i++) {
-            if (msg.sender == WHITELISTED_USERS[i]) {
-                isExist = true;
-                break;
-            }
-        }
-        require(isExist == true, 'You are not allowed to transfer the tokens');
-        transferFrom(_fromAddress, _toAddress, amount);
+    function transfer(address _toAddress, uint256 amount) public override returns (bool) {
+        require(WHITELISTED_USERS[msg.sender] == true, 'You are not allowed to transfer the tokens');
+        address owner = _msgSender();
+        _transfer(owner, _toAddress, amount);
+        return true;
+    }
+
+    function transferFrom(address _fromAddress, address _toAddress, uint256 amount) public override returns (bool) {
+        require(WHITELISTED_USERS[msg.sender] == true, 'You are not allowed to transfer the tokens');
+        address spender = _msgSender();
+        _spendAllowance(_fromAddress, spender, amount);
+        _transfer(_fromAddress, _toAddress, amount);
+        return true;
     }
 }
