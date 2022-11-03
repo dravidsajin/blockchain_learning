@@ -14,7 +14,7 @@ contract Football is ERC721, Ownable {
         mintTokens(msg.sender, 10);
     }
 
-    function mintTokens(address to, uint256 limit) internal {
+    function mintTokens(address to, uint256 limit) public onlyOwner {
         require(limit <= MaxLimit, 'Token limit crossed the max limit');
         for (uint256 i = 0; i < limit; i++) {
             mintToken(to);
